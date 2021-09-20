@@ -1,6 +1,7 @@
 #include <linux/module.h>
 #include <linux/list.h>
 #include <linux/printk.h>
+#include <linux/slab.h>
 
 struct pokemon {
 	char name[32];
