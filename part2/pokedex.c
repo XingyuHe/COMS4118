@@ -42,6 +42,11 @@ void print_pokedex(void)
 void delete_pokedex(void)
 {
 	/* TODO: write your code here */
+	struct pokemon * curr, * next; 
+	list_for_each_entry_safe(curr, next, &pokedex, list) {
+		list_del(&curr->list);
+		kfree(curr);
+	}
 }
 
 int pokedex_init(void)
