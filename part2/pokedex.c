@@ -9,6 +9,8 @@ struct pokemon {
 	struct list_head list;
 };
 
+static LIST_HEAD(pokedex);
+
 void print_pokemon(struct pokemon *p)
 {
 	printk(KERN_INFO "%s: National Dex No. #%d\n", p->name, p->dex_no);
@@ -19,11 +21,22 @@ void print_pokemon(struct pokemon *p)
 void add_pokemon(char *name, int dex_no)
 {
 	/* TODO: write your code here */
+	struct pokemon * new_poke;
+	new_poke = kmalloc(sizeof(*new_poke), GFP_KERNEL);
+	new_poke->dex_no = dex_no;
+	strcpy(new_poke->name, name);
+	INIT_LIST_HEAD(&new_poke->list);
+
+	list_add_tail(&new_poke->list, &pokedex);
 }
 
 void print_pokedex(void)
 {
 	/* TODO: write your code here, using print_pokemon() */
+	struct pokemon * temp; 
+	list_for_each_entry(temp, &pokedex, list) {
+		print_pokemon(temp);
+	}
 }
 
 void delete_pokedex(void)
