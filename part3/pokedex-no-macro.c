@@ -1,5 +1,7 @@
 #include <linux/module.h>
 #include <linux/printk.h>
+#include "mylist.h"
+#include <linux/slab.h>
 
 /*
  * Undefine commonly used macros -- DO NOT MODIFY
@@ -17,11 +19,15 @@
 #undef READ_ONCE
 #undef WRITE_ONCE
 
+
+
 struct pokemon {
 	char name[32];
 	int dex_no;
 	struct list_head list;
 };
+
+static my_LIST_HEAD(pokedex);
 
 void print_pokemon(struct pokemon *p)
 {
@@ -33,19 +39,35 @@ void print_pokemon(struct pokemon *p)
 void add_pokemon(char *name, int dex_no)
 {
 	/* TODO: write your code here */
+	struct pokemon * new_poke;
+	new_poke = kmalloc(sizeof(*new_poke), GFP_KERNEL);
+	new_poke->dex_no = dex_no;
+	strcpy(new_poke->name, name);
+	my_INIT_LIST_HEAD(&new_poke->list);
+
+	my_list_add_tail(&new_poke->list, &pokedex);
 }
 
 void print_pokedex(void)
 {
 	/* TODO: write your code here, using print_pokemon() */
+	struct pokemon * temp; 
+	my_list_for_each_entry(temp, &pokedex, list) {
+		print_pokemon(temp);
+	}
 }
 
 void delete_pokedex(void)
 {
 	/* TODO: write your code here */
+	struct pokemon * curr, * next; 
+	my_list_for_each_entry_safe(curr, next, &pokedex, list) {
+		list_del(&curr->list);
+		kfree(curr);
+	}
 }
 
-int pokedex_nom_init(void)
+int pokedex_init(void)
 {
 	printk(KERN_INFO "Loading Module\n");
 
@@ -59,7 +81,7 @@ int pokedex_nom_init(void)
 	return 0;
 }
 
-void pokedex_nom_exit(void)
+void pokedex_exit(void)
 {
 	printk(KERN_INFO "Removing Module\n");
 
@@ -68,9 +90,9 @@ void pokedex_nom_exit(void)
 	delete_pokedex();
 }
 
-module_init( pokedex_nom_init );
-module_exit( pokedex_nom_exit );
+module_init( pokedex_init );
+module_exit( pokedex_exit );
 
 MODULE_LICENSE("GPL");
-MODULE_DESCRIPTION("A handy Pokedex module, without list macros");
+MODULE_DESCRIPTION("A handy Pokedex module");
 MODULE_AUTHOR("SGG");
